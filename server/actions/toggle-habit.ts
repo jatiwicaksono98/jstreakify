@@ -5,16 +5,14 @@ import { habitEntries, habits } from '@/server/schema';
 import { auth } from '@/server/auth';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { getOffsetDateAndTime, getTodayDate } from '@/lib/utils';
 
 export async function toggleHabitEntry(habitId: string) {
   const user = await auth();
   if (!user) throw new Error('Unauthorized');
 
-  const now = new Date();
-  const offsetToday = new Date(
-    now.getTime() + 7 * 60 * 60 * 1000 + 2 * 24 * 60 * 60 * 1000
-  ); // Add 7 hours
-  const today = offsetToday.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const now = getOffsetDateAndTime(); // timestamp with UTC+7
+  const today = getTodayDate(); // 'YYYY-MM-DD'
 
   const existing = await db.query.habitEntries.findFirst({
     where: and(eq(habitEntries.habitId, habitId), eq(habitEntries.date, today)),
@@ -32,20 +30,20 @@ export async function toggleHabitEntry(habitId: string) {
       .update(habitEntries)
       .set({
         isDone: !existing.isDone,
-        completedAt: !existing.isDone ? offsetToday : existing.completedAt,
+        completedAt: !existing.isDone ? now : undefined,
       })
       .where(eq(habitEntries.id, existing.id))
       .returning();
 
-    if (!updated[0].isDone) {
-      await db
-        .update(habits)
-        .set({
-          currentStreak: 0,
-          lastCompletedDate: null,
-        })
-        .where(eq(habits.id, habitId));
-    }
+    // if (!updated[0].isDone) {
+    //   await db
+    //     .update(habits)
+    //     .set({
+    //       currentStreak: 0,
+    //       lastCompletedDate: null,
+    //     })
+    //     .where(eq(habits.id, habitId));
+    // }
 
     revalidatePath('/');
     return {
@@ -62,8 +60,8 @@ export async function toggleHabitEntry(habitId: string) {
     isDone: true,
   });
 
-  // Handle streak logic
-  const yesterday = offsetToday;
+  // Streak logic
+  const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().slice(0, 10);
 
@@ -84,6 +82,7 @@ export async function toggleHabitEntry(habitId: string) {
 
   return {
     isDone: true,
-    completedAt: offsetToday,
+    completedAt: now,
+    currentStreak: newStreak,
   };
 }
