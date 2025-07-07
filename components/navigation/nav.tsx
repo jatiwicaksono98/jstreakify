@@ -14,7 +14,7 @@ export default async function Nav() {
       <nav>
         <ul className="flex justify-between items-center md:gap-8 gap-4">
           <li className="flex flex-1">
-            <Link href="/" aria-label="sprout and scribble logo">
+            <Link href="/" aria-label="jstreakify logo">
               <Logo />
             </Link>
           </li>

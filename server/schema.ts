@@ -9,6 +9,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from 'next-auth/adapters';
 import { createId } from '@paralleldrive/cuid2';
+import { date } from 'drizzle-orm/pg-core';
 
 export const RoleEnum = pgEnum('roles', ['user', 'admin']);
 
@@ -95,3 +96,40 @@ export const twoFactorTokens = pgTable(
     compoundKey: primaryKey({ columns: [vt.id, vt.token] }),
   })
 );
+
+export const habits = pgTable('habit', {
+  id: text('id')
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  name: text('name').notNull(),
+
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
+
+  // Streak fields
+  currentStreak: integer('current_streak').notNull().default(0),
+  longestStreak: integer('longest_streak').notNull().default(0),
+  lastCompletedDate: date('last_completed_date'),
+});
+
+export const habitEntries = pgTable('habit_entry', {
+  id: text('id')
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  habitId: text('habit_id')
+    .notNull()
+    .references(() => habits.id, { onDelete: 'cascade' }),
+
+  date: date('date').notNull(), // for daily tracking and streaks
+
+  completedAt: timestamp('completed_at', { mode: 'date' }).notNull(), // exact time
+
+  isDone: boolean('is_done').notNull().default(false),
+});
