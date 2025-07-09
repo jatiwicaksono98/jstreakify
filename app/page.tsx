@@ -1,10 +1,14 @@
 // app/page.tsx
 import { HabitCard } from '@/components/habit/habit-card';
+import { TodoCard } from '@/components/todo/todo-card';
+import { TodoDrawer } from '@/components/todo/todo-drawer';
 import { Button } from '@/components/ui/button';
 import { getTodayDate } from '@/lib/utils';
 import { auth } from '@/server/auth';
 import { getHabitsForToday } from '@/server/queries/get-today-habits';
+import { getTodosWithTodayStatus } from '@/server/queries/get-today-todos';
 import { HabitWithEntry } from '@/types/today-habits';
+import { TodoWithEntry } from '@/types/today-todo-schema';
 import { redirect } from 'next/navigation';
 
 export default async function Home() {
@@ -13,14 +17,35 @@ export default async function Home() {
 
   const today = getTodayDate();
   const habits: HabitWithEntry[] = await getHabitsForToday(user.user.id, today);
+  const todos: TodoWithEntry[] = await getTodosWithTodayStatus(
+    user.user.id,
+    today
+  );
+
+  const [uncheckedTodos, checkedTodos] = [
+    todos.filter((t) => !t.isDone),
+    todos.filter((t) => t.isDone),
+  ];
+
   return (
     <div>
-      <Button className="mb-4" variant="elevated">
-        {today}
-      </Button>
+      <Button variant="elevated">{today}</Button>
+
+      <h1 className="text-2xl font-bold py-4">Habits</h1>
       {habits.map((habit) => (
         <HabitCard key={habit.id} {...habit} />
       ))}
+
+      <h1 className="text-2xl font-bold py-4">To Do</h1>
+      <TodoDrawer />
+      <div className="py-4">
+        {uncheckedTodos.map((todo) => (
+          <TodoCard key={todo.id} {...todo} />
+        ))}
+        {checkedTodos.map((todo) => (
+          <TodoCard key={todo.id} {...todo} />
+        ))}
+      </div>
     </div>
   );
 }

@@ -35,15 +35,15 @@ export async function toggleHabitEntry(habitId: string) {
       .where(eq(habitEntries.id, existing.id))
       .returning();
 
-    // if (!updated[0].isDone) {
-    //   await db
-    //     .update(habits)
-    //     .set({
-    //       currentStreak: 0,
-    //       lastCompletedDate: null,
-    //     })
-    //     .where(eq(habits.id, habitId));
-    // }
+    if (!updated[0].isDone) {
+      await db
+        .update(habits)
+        .set({
+          currentStreak: 0,
+          lastCompletedDate: null,
+        })
+        .where(eq(habits.id, habitId));
+    }
 
     revalidatePath('/');
     return {

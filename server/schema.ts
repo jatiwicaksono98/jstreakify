@@ -133,3 +133,35 @@ export const habitEntries = pgTable('habit_entry', {
 
   isDone: boolean('is_done').notNull().default(false),
 });
+
+export const todos = pgTable('todo', {
+  id: text('id')
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+
+  content: text('content').notNull(),
+
+  createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
+});
+
+export const todoEntries = pgTable('todo_entry', {
+  id: text('id')
+    .notNull()
+    .primaryKey()
+    .$defaultFn(() => createId()),
+
+  todoId: text('todo_id')
+    .notNull()
+    .references(() => todos.id, { onDelete: 'cascade' }),
+
+  date: date('date').notNull(),
+
+  completedAt: timestamp('completed_at', { mode: 'date' }),
+
+  isDone: boolean('is_done').notNull().default(false),
+});
