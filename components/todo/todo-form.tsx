@@ -40,8 +40,7 @@ export function AddTodoForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => {
-          e.stopPropagation();
+        onSubmit={() => {
           form.handleSubmit(onSubmit);
         }}
         className="space-y-4"
