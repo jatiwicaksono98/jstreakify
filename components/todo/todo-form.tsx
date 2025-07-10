@@ -34,7 +34,7 @@ export function AddTodoForm({ onSuccess }: { onSuccess?: () => void }) {
   });
 
   const onSubmit = (values: AddTodoValues) => {
-    execute(values.content);
+    execute(values);
   };
 
   return (
