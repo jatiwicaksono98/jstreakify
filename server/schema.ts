@@ -145,6 +145,7 @@ export const todos = pgTable('todo', {
     .references(() => users.id, { onDelete: 'cascade' }),
 
   content: text('content').notNull(),
+  isArchived: boolean('is_archived').notNull().default(false),
 
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
 });

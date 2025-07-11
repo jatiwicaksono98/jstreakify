@@ -1,34 +1,32 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { formatInTimeZone } from 'date-fns-tz';
+import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
 
+/**
+ * Merge Tailwind CSS classes safely
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Get today's date in 'YYYY-MM-DD' format for Jakarta (UTC+7)
+ */
 export function getTodayDate(): string {
-  const now = new Date();
-  // const offset = 7 * 60 * 60 * 1000;
-  // const offsetToday = new Date(now.getTime() + offset);
-
-  const offsetToday = new Date(now.getTime());
-  return offsetToday.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  return formatInTimeZone(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd');
 }
 
-// export function getOffsetDateAndTime(offsetInHours = 7): Date {
-//   const now = new Date();
-//   const offsetMs = offsetInHours * 60 * 60 * 1000;
-//   return new Date(now.getTime() + offsetMs);
-// }
-
-// + 24 * 60 * 60 * 1000
-
-export function getOffsetDateAndTime(offsetInHours = 0): Date {
-  const now = new Date();
-  const offsetMs = offsetInHours * 60 * 60 * 1000;
-  return new Date(now.getTime() + offsetMs);
+/**
+ * Get a Date object offset by given hours from now (default +7 for Jakarta)
+ */
+export function getOffsetDateAndTime(): Date {
+  const now = new Date(); // current UTC timestamp
+  return toZonedTime(now, 'Asia/Jakarta'); // returns a Date object "localized" to WIB
 }
 
+/**
+ * Format a date into 'HH:mm:ss' in Jakarta local time
+ */
 export function formatTimeJakarta(date: Date): string {
   return formatInTimeZone(date, 'Asia/Jakarta', 'HH:mm:ss');
 }

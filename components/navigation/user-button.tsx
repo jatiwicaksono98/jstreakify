@@ -73,16 +73,6 @@ export const UserButton = ({ user }: Session) => {
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
-            onClick={() => router.push('/dashboard/orders')}
-            className="group py-2 font-medium cursor-pointer "
-          >
-            <TruckIcon
-              size={14}
-              className="mr-3 group-hover:translate-x-1 transition-all duration-300 ease-in-out"
-            />{' '}
-            My orders
-          </DropdownMenuItem>
-          <DropdownMenuItem
             onClick={() => router.push('/dashboard/settings')}
             className="group py-2 font-medium cursor-pointer  ease-in-out "
           >
@@ -92,7 +82,7 @@ export const UserButton = ({ user }: Session) => {
             />
             Settings
           </DropdownMenuItem>
-          {theme && (
+          {/* {theme && (
             <DropdownMenuItem className="py-2 font-medium cursor-pointer  ease-in-out">
               <div
                 //to stop the modal to immediately close on theme change
@@ -123,7 +113,7 @@ export const UserButton = ({ user }: Session) => {
                 />
               </div>
             </DropdownMenuItem>
-          )}
+          )} */}
           <DropdownMenuItem
             onClick={() => signOut()}
             className="py-2 group focus:bg-destructive/30 font-medium cursor-pointer "

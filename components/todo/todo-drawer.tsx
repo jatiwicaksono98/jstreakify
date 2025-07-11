@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { AddTodoForm } from './todo-form';
+import { PlusCircleIcon } from 'lucide-react';
 
 export function TodoDrawer() {
   const [open, setOpen] = useState(false);
@@ -19,7 +20,10 @@ export function TodoDrawer() {
   return (
     <Drawer open={open} onOpenChange={setOpen}>
       <DrawerTrigger asChild>
-        <Button variant="outline">Add To‑Do</Button>
+        <Button variant="elevated">
+          Add To‑Do
+          <PlusCircleIcon className="size-4" />
+        </Button>
       </DrawerTrigger>
       <DrawerContent className="w-full">
         <DrawerHeader>
