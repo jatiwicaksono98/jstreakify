@@ -13,6 +13,12 @@ import { date } from 'drizzle-orm/pg-core';
 
 export const RoleEnum = pgEnum('roles', ['user', 'admin']);
 
+export const TodoStatusEnum = pgEnum('todo_status', [
+  'not_started',
+  'in_progress',
+  'done',
+]);
+
 export const users = pgTable('user', {
   id: text('id')
     .notNull()
@@ -164,5 +170,5 @@ export const todoEntries = pgTable('todo_entry', {
 
   completedAt: timestamp('completed_at', { mode: 'date' }),
 
-  isDone: boolean('is_done').notNull().default(false),
+  status: TodoStatusEnum('status').notNull().default('not_started'),
 });

@@ -1,3 +1,4 @@
+'use server';
 import { db } from '@/server';
 import { habitEntries, habits } from '@/server/schema';
 import { and, desc, eq } from 'drizzle-orm';

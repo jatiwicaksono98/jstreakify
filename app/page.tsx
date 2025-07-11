@@ -1,4 +1,3 @@
-// app/page.tsx
 import { HabitCard } from '@/components/habit/habit-card';
 import { TodoCard } from '@/components/todo/todo-card';
 import { TodoDrawer } from '@/components/todo/todo-drawer';
@@ -22,10 +21,19 @@ export default async function Home() {
     today
   );
 
-  const [uncheckedTodos, checkedTodos] = [
-    todos.filter((t) => !t.isDone),
-    todos.filter((t) => t.isDone),
-  ];
+  // Define sort order
+  const statusOrder = {
+    not_started: 0,
+    in_progress: 1,
+    done: 2,
+  };
+
+  // Default to 'not_started' if status is null
+  const sortedTodos = [...todos].sort((a, b) => {
+    const aOrder = statusOrder[a.status ?? 'not_started'];
+    const bOrder = statusOrder[b.status ?? 'not_started'];
+    return aOrder - bOrder;
+  });
 
   return (
     <div>
@@ -39,10 +47,7 @@ export default async function Home() {
       <h1 className="text-2xl font-bold py-4">To Do</h1>
       <TodoDrawer />
       <div className="py-4">
-        {uncheckedTodos.map((todo) => (
-          <TodoCard key={todo.id} {...todo} />
-        ))}
-        {checkedTodos.map((todo) => (
+        {sortedTodos.map((todo) => (
           <TodoCard key={todo.id} {...todo} />
         ))}
       </div>
