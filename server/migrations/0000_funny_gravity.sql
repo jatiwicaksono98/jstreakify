@@ -27,12 +27,46 @@ CREATE TABLE IF NOT EXISTS "email_tokens" (
 	CONSTRAINT "email_tokens_id_token_pk" PRIMARY KEY("id","token")
 );
 --> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "habit_entry" (
+	"id" text PRIMARY KEY NOT NULL,
+	"habit_id" text NOT NULL,
+	"date" date NOT NULL,
+	"completed_at" timestamp NOT NULL,
+	"is_done" boolean DEFAULT false NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "habit" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"name" text NOT NULL,
+	"created_at" timestamp DEFAULT now(),
+	"current_streak" integer DEFAULT 0 NOT NULL,
+	"longest_streak" integer DEFAULT 0 NOT NULL,
+	"last_completed_date" date
+);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "password_reset_tokens" (
 	"id" text NOT NULL,
 	"token" text NOT NULL,
 	"expires" timestamp NOT NULL,
 	"email" text NOT NULL,
 	CONSTRAINT "password_reset_tokens_id_token_pk" PRIMARY KEY("id","token")
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "todo_entry" (
+	"id" text PRIMARY KEY NOT NULL,
+	"todo_id" text NOT NULL,
+	"date" date NOT NULL,
+	"completed_at" timestamp,
+	"is_done" boolean DEFAULT false NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE IF NOT EXISTS "todo" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"content" text NOT NULL,
+	"is_archived" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp DEFAULT now()
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "two_factor_tokens" (
@@ -58,6 +92,30 @@ CREATE TABLE IF NOT EXISTS "user" (
 --> statement-breakpoint
 DO $$ BEGIN
  ALTER TABLE "account" ADD CONSTRAINT "account_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "habit_entry" ADD CONSTRAINT "habit_entry_habit_id_habit_id_fk" FOREIGN KEY ("habit_id") REFERENCES "public"."habit"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "habit" ADD CONSTRAINT "habit_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "todo_entry" ADD CONSTRAINT "todo_entry_todo_id_todo_id_fk" FOREIGN KEY ("todo_id") REFERENCES "public"."todo"("id") ON DELETE cascade ON UPDATE no action;
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;
+--> statement-breakpoint
+DO $$ BEGIN
+ ALTER TABLE "todo" ADD CONSTRAINT "todo_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
