@@ -67,10 +67,14 @@ export function TodoCard({
       <CardContent className="p-4 flex justify-between items-center gap-4">
         <div className="flex items-center gap-3">
           <Checkbox checked={isDone} onCheckedChange={handleToggle} disabled />
-          <div
-            className={`font-medium ${isDone ? 'text-muted-foreground' : ''}`}
-          >
-            <span className="line-through">{content}</span>
+          <div className={`font-medium `}>
+            <span
+              className={` ${
+                isDone ? 'line-through text-muted-foreground' : ''
+              }`}
+            >
+              {content}
+            </span>
 
             <span className="text-sm text-muted-foreground">
               &nbsp;&nbsp;({ageText}
