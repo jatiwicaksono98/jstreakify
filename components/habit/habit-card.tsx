@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toggleHabitEntry } from '@/server/actions/toggle-habit';
 import { HabitWithEntry } from '@/types/today-habits';
-import { formatTimeJakarta } from '@/lib/utils';
+import { formatFullDateTimeIndo } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 export function HabitCard({
@@ -48,7 +48,7 @@ export function HabitCard({
           <div className="font-semibold">{name}</div>
           <div className="text-sm mt-1 text-muted-foreground">
             {isDone && doneTime
-              ? `✅ ${formatTimeJakarta(doneTime)}`
+              ? `✅ ${formatFullDateTimeIndo(doneTime)}`
               : '❌ Not yet'}
           </div>
         </div>

@@ -1,18 +1,19 @@
 'use server';
 
-import { db } from '@/server';
-import { habitEntries, habits } from '@/server/schema';
-import { auth } from '@/server/auth';
+import { getTodayDate } from '@/lib/utils';
+import { formatInTimeZone } from 'date-fns-tz';
 import { and, eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
-import { getOffsetDateAndTime, getTodayDate } from '@/lib/utils';
+import { db } from '..';
+import { auth } from '../auth';
+import { habitEntries, habits } from '../schema';
 
 export async function toggleHabitEntry(habitId: string) {
   const user = await auth();
   if (!user) throw new Error('Unauthorized');
 
-  const now = getOffsetDateAndTime(); // timestamp with UTC+7
-  const today = getTodayDate(); // 'YYYY-MM-DD'
+  const now = new Date(); // ✅ Use UTC timestamp only
+  const today = getTodayDate(); // Still safe — returns 'YYYY-MM-DD' in Jakarta zone
 
   const existing = await db.query.habitEntries.findFirst({
     where: and(eq(habitEntries.habitId, habitId), eq(habitEntries.date, today)),
@@ -25,12 +26,11 @@ export async function toggleHabitEntry(habitId: string) {
   if (!habit) throw new Error('Habit not found');
 
   if (existing) {
-    // ✅ TOGGLE OFF
     const updated = await db
       .update(habitEntries)
       .set({
         isDone: !existing.isDone,
-        completedAt: !existing.isDone ? now : undefined,
+        completedAt: !existing.isDone ? now : undefined, // ✅ Save UTC
       })
       .where(eq(habitEntries.id, existing.id))
       .returning();
@@ -52,18 +52,21 @@ export async function toggleHabitEntry(habitId: string) {
     };
   }
 
-  // ✅ TOGGLE ON
+  // ✅ First-time toggle on
   await db.insert(habitEntries).values({
     habitId,
     date: today,
-    completedAt: now,
+    completedAt: now, // ✅ Save UTC
     isDone: true,
   });
 
-  // Streak logic
-  const yesterday = new Date(now);
+  const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().slice(0, 10);
+  const yesterdayStr = formatInTimeZone(
+    yesterday,
+    'Asia/Jakarta',
+    'yyyy-MM-dd'
+  );
 
   const continueStreak = habit.lastCompletedDate === yesterdayStr;
   const newStreak = continueStreak ? habit.currentStreak + 1 : 1;
