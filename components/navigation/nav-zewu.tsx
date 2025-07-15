@@ -1,4 +1,3 @@
-'use client';
 import { Button } from '../ui/button';
 import Link from 'next/link';
 import Lottie from 'lottie-react';
