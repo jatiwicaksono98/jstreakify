@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ZewuLogo from './logo-zewu';
 import { HeartIcon } from 'lucide-react';
 
-export default function ZewuNav() {
+export default async function ZewuNav() {
   return (
     <header className="py-8">
       <nav>
