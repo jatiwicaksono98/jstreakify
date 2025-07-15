@@ -16,7 +16,7 @@ export default function ZewuNav() {
 
           <li>
             <Button
-              // variant={'zewu'}
+              variant={'zewu'}
               className="flex items-center justify-center gap-1.5"
             >
               Terima Kasih
