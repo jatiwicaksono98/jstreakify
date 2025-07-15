@@ -3,7 +3,7 @@ import Link from 'next/link';
 import ZewuLogo from './logo-zewu';
 import { HeartIcon } from 'lucide-react';
 
-export default async function ZewuNav() {
+export default function ZewuNav() {
   return (
     <header className="py-8">
       <nav>
@@ -16,11 +16,11 @@ export default async function ZewuNav() {
 
           <li>
             <Button
-              variant={'zewu'}
+              // variant={'zewu'}
               className="flex items-center justify-center gap-1.5"
             >
               Terima Kasih
-              <HeartIcon color="#8C6239" strokeWidth={4} size={7} />
+              {/* <HeartIcon color="#8C6239" strokeWidth={4} size={7} /> */}
               {/* <Lottie
                 className="h-6"
                 animationData={heartbeat}

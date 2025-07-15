@@ -33,7 +33,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex-grow px-6 md:px-12 mx-auto max-w-8xl pb-8">
-            {/* <Nav /> */}
+            <Nav />
             <ZewuNav />
             <Toaster richColors />
             {children}
