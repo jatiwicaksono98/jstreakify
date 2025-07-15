@@ -15,9 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-// import Image from 'next/image';
 import confetti from 'canvas-confetti';
-import { ThumbsDown, ThumbsUp } from 'lucide-react';
+import { SendIcon, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { Input } from '../ui/input';
 
 const FeedbackSchema = z.object({
   rating: z.enum(['😡', '😐', '😊', '😍'], {
@@ -32,6 +32,7 @@ const FeedbackSchema = z.object({
       message: 'Maksimum 500 karakter',
     })
     .optional(),
+  name: z.string().max(100, { message: 'Maksimum 100 karakter' }).optional(),
 });
 
 type FeedbackValues = z.infer<typeof FeedbackSchema>;
@@ -55,6 +56,7 @@ export function FeedbackForm() {
       rating: undefined,
       wouldRecommend: undefined,
       suggestion: '',
+      name: '',
     },
   });
 
@@ -92,16 +94,19 @@ export function FeedbackForm() {
 
   if (step === 'done') {
     const rating = submitted?.rating ?? '😊';
+    const name = submitted?.name?.trim();
     const THANKS_COPY: Record<FeedbackValues['rating'], string> = {
-      '😍': 'Senang banget kamu puas dengan Zewu! Sampai jumpa lagi ☕',
-      '😊': 'Terima kasih atas kunjunganmu! Sampai ketemu lagi di Zewu ☕',
-      '😐': 'Terima kasih! Kami akan terus meningkatkan pelayanan kami 🙏',
-      '😡': 'Maaf atas ketidaknyamanannya. Masukanmu sangat berarti bagi kami 🙏',
+      '😍': `Senang banget kamu puas dengan Zewu! Sampai jumpa lagi ☕`,
+      '😊': `Terima kasih atas kunjunganmu! Sampai ketemu lagi di Zewu ☕`,
+      '😐': `Terima kasih! Kami akan terus meningkatkan pelayanan kami 🙏`,
+      '😡': `Maaf atas ketidaknyamanannya. Masukanmu sangat berarti bagi kami 🙏`,
     };
 
     return (
       <div className="text-center space-y-3 py-10 max-w-md mx-auto px-6">
-        <h2 className="text-2xl font-semibold">Terima kasih!</h2>
+        <h2 className="text-2xl font-semibold">
+          {name ? `Terima kasih, ${name}!` : 'Terima kasih!'}
+        </h2>
         <p className="text-base text-muted-foreground">{THANKS_COPY[rating]}</p>
       </div>
     );
@@ -113,14 +118,10 @@ export function FeedbackForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-6 max-w-md mx-auto px-6 py-8"
       >
-        {/* Zewu Logo */}
-
-        {/* Step Progress */}
         <div className="text-sm text-center text-muted-foreground mb-4">
           Langkah {step} dari 3
         </div>
 
-        {/* Steps */}
         <div className="relative min-h-[320px]">
           <AnimatePresence mode="wait" initial={false}>
             {step === 1 && (
@@ -197,8 +198,7 @@ export function FeedbackForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-xl font-semibold text-center block mb-4">
-                        Setelah kunjunganmu hari ini, apakah kamu akan
-                        merekomendasikan{' '}
+                        Apakah kamu akan me-rekomendasikan{' '}
                         <span
                           className="px-1 rounded-sm font-bold"
                           style={{
@@ -212,7 +212,6 @@ export function FeedbackForm() {
                       </FormLabel>
                       <FormControl>
                         <div className="flex flex-col gap-4">
-                          {/* YES Button */}
                           <Button
                             type="button"
                             onClick={() => {
@@ -243,7 +242,6 @@ export function FeedbackForm() {
                             Iya, tentu!
                           </Button>
 
-                          {/* NO Button */}
                           <Button
                             type="button"
                             onClick={() => {
@@ -280,7 +278,6 @@ export function FeedbackForm() {
                     </FormItem>
                   )}
                 />
-
                 <div className="flex justify-center pt-4">
                   <button
                     type="button"
@@ -302,35 +299,63 @@ export function FeedbackForm() {
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="absolute inset-0"
               >
-                <FormField
-                  control={form.control}
-                  name="suggestion"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-xl font-semibold text-center block mb-2">
-                        Apa yang bisa kami tingkatkan?{' '}
-                        <span className="text-muted-foreground text-sm font-normal">
-                          (opsional)
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Tulis saran, ide, atau masukanmu di sini..."
-                          {...field}
-                          className="resize-none min-h-[120px] text-[16px]"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="suggestion"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xl font-semibold text-center block mb-2">
+                          Apa yang bisa kami tingkatkan?{' '}
+                          <span className="text-muted-foreground text-sm font-normal">
+                            (opsional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Tulis saran, ide, atau masukanmu di sini..."
+                            {...field}
+                            className="resize-none min-h-[120px] text-[16px]"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-medium text-muted-foreground">
+                          Nama {''}
+                          <span className="text-muted-foreground text-sm font-normal">
+                            (opsional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="text"
+                            // placeholder="Contoh: Andi"
+                            {...field}
+                            className="w-full border border-black rounded-md px-4 py-3 text-[16px]"
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <Button
                   type="submit"
-                  className="w-full text-lg py-6 mt-4"
+                  className="w-full text-lg py-6 mt-6"
                   style={{ backgroundColor: '#8C6239', color: 'white' }}
                 >
-                  Kirim Feedback ✉️
+                  Kirim
+                  <SendIcon size={16} className="ml-2" />
                 </Button>
-                <p className="text-xs text-center text-muted-foreground mt-2">
+
+                {/* <p className="text-xs text-center text-muted-foreground mt-2">
                   Feedback ini bersifat anonim dan hanya digunakan untuk
                   meningkatkan layanan{' '}
                   <span
@@ -343,7 +368,8 @@ export function FeedbackForm() {
                     Zewu
                   </span>
                   .
-                </p>
+                </p> */}
+
                 <div className="flex justify-center pt-4">
                   <button
                     type="button"

@@ -1,11 +1,11 @@
-import { Button } from '../ui/button';
 import Link from 'next/link';
 import ZewuLogo from './logo-zewu';
-import { HeartIcon } from 'lucide-react';
+import HeartLogo from './logo-heart';
 import { auth } from '@/server/auth';
 
 export default async function ZewuNav() {
   const session = await auth();
+
   return (
     <header className="py-8">
       <nav>
@@ -17,20 +17,7 @@ export default async function ZewuNav() {
           </li>
 
           <li>
-            <Button
-              variant={'zewu'}
-              className="flex items-center justify-center gap-1.5"
-            >
-              Terima Kasih
-              <HeartIcon color="#8C6239" strokeWidth={4} size={7} />
-              {/* <Lottie
-                className="h-6"
-                animationData={heartbeat}
-                loop={false}
-                autoplay
-                lottieRef={lottieRef}
-              /> */}
-            </Button>
+            <HeartLogo />
           </li>
         </ul>
       </nav>
