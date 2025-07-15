@@ -1,19 +1,10 @@
 import { Button } from '../ui/button';
 import Link from 'next/link';
-import Lottie from 'lottie-react';
-import heartbeat from '@/public/heartbeat.json';
-import { useRef, useEffect } from 'react';
+
 import ZewuLogo from './logo-zewu';
-import { Heart, HeartIcon, HeartPulse } from 'lucide-react';
+import { HeartIcon } from 'lucide-react';
 
 export default function ZewuNav() {
-  const lottieRef = useRef<any>(null);
-  useEffect(() => {
-    if (lottieRef.current) {
-      lottieRef.current.setSpeed(0.5); // Set to half speed
-    }
-  }, []);
-
   return (
     <header className="py-8">
       <nav>
