@@ -1,6 +1,5 @@
 import { Button } from '../ui/button';
 import Link from 'next/link';
-
 import ZewuLogo from './logo-zewu';
 import { HeartIcon } from 'lucide-react';
 
