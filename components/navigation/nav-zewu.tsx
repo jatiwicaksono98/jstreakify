@@ -20,7 +20,7 @@ export default function ZewuNav() {
               className="flex items-center justify-center gap-1.5"
             >
               Terima Kasih
-              {/* <HeartIcon color="#8C6239" strokeWidth={4} size={7} /> */}
+              <HeartIcon color="#8C6239" strokeWidth={4} size={7} />
               {/* <Lottie
                 className="h-6"
                 animationData={heartbeat}
