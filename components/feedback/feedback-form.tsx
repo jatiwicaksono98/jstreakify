@@ -15,7 +15,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import Image from 'next/image';
+// import Image from 'next/image';
+import confetti from 'canvas-confetti';
+import { ThumbsDown, ThumbsUp } from 'lucide-react';
 
 const FeedbackSchema = z.object({
   rating: z.enum(['😡', '😐', '😊', '😍'], {
@@ -75,7 +77,15 @@ export function FeedbackForm() {
   };
 
   const onSubmit = (values: FeedbackValues) => {
-    console.log('📬 Feedback dikirim:', values);
+    if (values.rating === '😊' || values.rating === '😍') {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        disableForReducedMotion: true,
+        colors: ['#8C6239', '#A97E53', '#fffacc'],
+      });
+    }
     setSubmitted(values);
     setStep('done');
   };
@@ -85,13 +95,13 @@ export function FeedbackForm() {
     const THANKS_COPY: Record<FeedbackValues['rating'], string> = {
       '😍': 'Senang banget kamu puas dengan Zewu! Sampai jumpa lagi ☕',
       '😊': 'Terima kasih atas kunjunganmu! Sampai ketemu lagi di Zewu ☕',
-      '😐': 'Terima kasih! Kami akan terus meningkatkan pengalamanmu 🙏',
+      '😐': 'Terima kasih! Kami akan terus meningkatkan pelayanan kami 🙏',
       '😡': 'Maaf atas ketidaknyamanannya. Masukanmu sangat berarti bagi kami 🙏',
     };
 
     return (
-      <div className="text-center space-y-3 py-10 max-w-md mx-auto">
-        <h2 className="text-2xl font-semibold">🎉 Terima kasih!</h2>
+      <div className="text-center space-y-3 py-10 max-w-md mx-auto px-6">
+        <h2 className="text-2xl font-semibold">Terima kasih!</h2>
         <p className="text-base text-muted-foreground">{THANKS_COPY[rating]}</p>
       </div>
     );
@@ -101,23 +111,16 @@ export function FeedbackForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6 max-w-md mx-auto p-4"
+        className="space-y-6 max-w-md mx-auto px-6 py-8"
       >
-        <div className="flex justify-center mb-2">
-          <Image
-            src="/zewu.png"
-            alt="Zewu Logo"
-            width={140}
-            height={140}
-            className="rounded-full"
-            priority
-          />
-        </div>
+        {/* Zewu Logo */}
 
+        {/* Step Progress */}
         <div className="text-sm text-center text-muted-foreground mb-4">
           Langkah {step} dari 3
         </div>
 
+        {/* Steps */}
         <div className="relative min-h-[320px]">
           <AnimatePresence mode="wait" initial={false}>
             {step === 1 && (
@@ -134,9 +137,15 @@ export function FeedbackForm() {
                   name="rating"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-xl font-semibold text-center block mb-3">
+                      <FormLabel className="text-xl font-semibold text-center block mb-6">
                         Seberapa puas dengan kunjunganmu ke{' '}
-                        <span className="bg-[#fffacc] px-1 rounded-sm">
+                        <span
+                          className="px-1 rounded-sm font-bold"
+                          style={{
+                            backgroundColor: 'rgba(140, 98, 57, 0.15)',
+                            color: '#8C6239',
+                          }}
+                        >
                           Zewu
                         </span>{' '}
                         hari ini?
@@ -149,9 +158,10 @@ export function FeedbackForm() {
                               type="button"
                               aria-label={label}
                               className={cn(
-                                'p-2 flex flex-col items-center transition-all rounded-xl min-w-[64px] hover:scale-110 focus:outline-none',
-                                field.value === emoji &&
-                                  'ring-2 ring-primary scale-110 bg-muted'
+                                'p-3 flex flex-col items-center transition-all rounded-xl min-w-[64px] hover:scale-110 focus:outline-none',
+                                field.value === emoji
+                                  ? 'bg-[rgba(140,98,57,0.15)] ring-2 ring-[#8C6239]'
+                                  : 'bg-muted'
                               )}
                               onClick={() => {
                                 field.onChange(emoji);
@@ -189,49 +199,89 @@ export function FeedbackForm() {
                       <FormLabel className="text-xl font-semibold text-center block mb-4">
                         Setelah kunjunganmu hari ini, apakah kamu akan
                         merekomendasikan{' '}
-                        <span className="bg-[#fffacc] px-1 rounded-sm">
+                        <span
+                          className="px-1 rounded-sm font-bold"
+                          style={{
+                            backgroundColor: 'rgba(140, 98, 57, 0.15)',
+                            color: '#8C6239',
+                          }}
+                        >
                           Zewu
                         </span>{' '}
                         ke temanmu?
                       </FormLabel>
                       <FormControl>
                         <div className="flex flex-col gap-4">
+                          {/* YES Button */}
                           <Button
                             type="button"
-                            variant="elevated"
-                            className={cn(
-                              'w-full text-lg py-6',
-                              field.value === 'yes' &&
-                                'ring-2 ring-primary scale-[1.03]'
-                            )}
                             onClick={() => {
                               field.onChange('yes');
                               next();
                             }}
+                            className={cn(
+                              'w-full text-lg py-6 flex items-center justify-center gap-3 transition-all hover:scale-105',
+                              field.value === 'yes'
+                                ? 'ring-2 ring-[#8C6239] scale-[1.03]'
+                                : ''
+                            )}
+                            style={{
+                              backgroundColor:
+                                field.value === 'yes' ? '#8C6239' : 'white',
+                              color:
+                                field.value === 'yes' ? 'white' : '#8C6239',
+                              border: '1px solid #8C6239',
+                            }}
                           >
-                            ✅ Iya, tentu!
+                            <ThumbsUp
+                              size={20}
+                              stroke={
+                                field.value === 'yes' ? 'white' : '#8C6239'
+                              }
+                              className="-mt-0.5"
+                            />
+                            Iya, tentu!
                           </Button>
+
+                          {/* NO Button */}
                           <Button
                             type="button"
-                            variant="elevated"
-                            className={cn(
-                              'w-full text-lg py-6',
-                              field.value === 'no' &&
-                                'ring-2 ring-destructive scale-[1.03]'
-                            )}
                             onClick={() => {
                               field.onChange('no');
                               next();
                             }}
+                            className={cn(
+                              'w-full text-lg py-6 flex items-center justify-center gap-3 transition-all hover:scale-105',
+                              field.value === 'no'
+                                ? 'ring-2 ring-red-400 scale-[1.03]'
+                                : ''
+                            )}
+                            style={{
+                              backgroundColor: 'white',
+                              color:
+                                field.value === 'no' ? '#dc2626' : '#8C6239',
+                              border:
+                                field.value === 'no'
+                                  ? '1px solid #dc2626'
+                                  : '1px solid rgba(140,98,57,0.4)',
+                            }}
                           >
-                            ❌ Mungkin belum
+                            <ThumbsDown
+                              size={20}
+                              stroke={
+                                field.value === 'no' ? '#dc2626' : '#8C6239'
+                              }
+                              className="-mt-0.5"
+                            />
+                            Mungkin belum
                           </Button>
                         </div>
                       </FormControl>
                     </FormItem>
                   )}
                 />
-                <div className="flex justify-center pt-2">
+
+                <div className="flex justify-center pt-4">
                   <button
                     type="button"
                     onClick={prev}
@@ -273,15 +323,28 @@ export function FeedbackForm() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full text-lg py-6">
+                <Button
+                  type="submit"
+                  className="w-full text-lg py-6 mt-4"
+                  style={{ backgroundColor: '#8C6239', color: 'white' }}
+                >
                   Kirim Feedback ✉️
                 </Button>
                 <p className="text-xs text-center text-muted-foreground mt-2">
                   Feedback ini bersifat anonim dan hanya digunakan untuk
                   meningkatkan layanan{' '}
-                  <span className="bg-[#fffacc] px-1 rounded-sm">Zewu</span>.
+                  <span
+                    className="px-1 rounded-sm font-semibold"
+                    style={{
+                      backgroundColor: 'rgba(140,98,57,0.15)',
+                      color: '#8C6239',
+                    }}
+                  >
+                    Zewu
+                  </span>
+                  .
                 </p>
-                <div className="flex justify-center pt-2">
+                <div className="flex justify-center pt-4">
                   <button
                     type="button"
                     onClick={prev}
