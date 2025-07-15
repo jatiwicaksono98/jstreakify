@@ -96,9 +96,9 @@ export function FeedbackForm() {
     const rating = submitted?.rating ?? '😊';
     const name = submitted?.name?.trim();
     const THANKS_COPY: Record<FeedbackValues['rating'], string> = {
-      '😍': `Senang banget kamu puas dengan Zewu! Sampai jumpa lagi ☕`,
-      '😊': `Terima kasih atas kunjunganmu! Sampai ketemu lagi di Zewu ☕`,
-      '😐': `Terima kasih! Kami akan terus meningkatkan pelayanan kami 🙏`,
+      '😍': `Senang banget kamu puas dengan Zewu! Sampai jumpa lagi ✨`,
+      '😊': `Sampai ketemu lagi di Zewu ya! 😄`,
+      '😐': `Kami akan terus meningkatkan pelayanan kami 🙏`,
       '😡': `Maaf atas ketidaknyamanannya. Masukanmu sangat berarti bagi kami 🙏`,
     };
 
@@ -299,15 +299,15 @@ export function FeedbackForm() {
                 transition={{ duration: 0.25, ease: 'easeInOut' }}
                 className="absolute inset-0"
               >
-                <div className="space-y-6">
+                <div className="space-y-2">
                   <FormField
                     control={form.control}
                     name="suggestion"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xl font-semibold text-center block mb-2">
+                        <FormLabel className="text-xl font-semibold text-center mb-4 flex flex-col ">
                           Apa yang bisa kami tingkatkan?{' '}
-                          <span className="text-muted-foreground text-sm font-normal">
+                          <span className="text-muted-foreground text-sm font-normal mt-2">
                             (opsional)
                           </span>
                         </FormLabel>
@@ -327,11 +327,8 @@ export function FeedbackForm() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-base font-medium text-muted-foreground">
+                        <FormLabel className="text-base font-medium text-muted-foreground text-[14px]">
                           Nama {''}
-                          <span className="text-muted-foreground text-sm font-normal">
-                            (opsional)
-                          </span>
                         </FormLabel>
                         <FormControl>
                           <Input

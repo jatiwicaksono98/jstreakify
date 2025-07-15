@@ -21,13 +21,13 @@ export default function HeartLogo() {
   return (
     <Button
       variant="zewu"
-      className="flex items-center justify-center gap-1.5"
+      className="flex items-center justify-center gap-1.5 p-1.5"
       onClick={handlePlay}
     >
       {/* Terima Kasih */}
       {/* <HeartIcon color="#8C6239" strokeWidth={4} size={14} /> */}
       <Lottie
-        className="h-14"
+        className="h-16"
         animationData={heart}
         autoplay={false}
         loop={false}
