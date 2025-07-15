@@ -2,8 +2,10 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import ZewuLogo from './logo-zewu';
 import { HeartIcon } from 'lucide-react';
+import { auth } from '@/server/auth';
 
-export default function ZewuNav() {
+export default async function ZewuNav() {
+  const session = await auth();
   return (
     <header className="py-8">
       <nav>
