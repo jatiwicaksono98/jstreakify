@@ -4,7 +4,7 @@ import Nav from '@/components/navigation/nav';
 import { Toaster } from 'sonner';
 import { DM_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/components/providers/theme-provider';
-import ZewuNav from '@/components/navigation/nav-zewu';
+// import ZewuNav from '@/components/navigation/nav-zewu';
 
 export const metadata: Metadata = {
   title: 'JStreakify',
@@ -32,8 +32,8 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex-grow px-6 md:px-12 mx-auto max-w-8xl pb-8">
-            {/* <Nav /> */}
-            <ZewuNav />
+            <Nav />
+            {/* <ZewuNav /> */}
             <Toaster richColors />
             {children}
           </div>
