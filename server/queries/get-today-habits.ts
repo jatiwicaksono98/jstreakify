@@ -9,6 +9,7 @@ export async function getHabitsForToday(userId: string, today: string) {
       .select({
         id: habits.id,
         name: habits.name,
+        description: habits.description,
         currentStreak: habits.currentStreak,
         longestStreak: habits.longestStreak,
         isDoneToday: habitEntries.isDone,

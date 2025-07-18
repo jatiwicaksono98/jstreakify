@@ -2,7 +2,7 @@ import { HabitCard } from '@/components/habit/habit-card';
 import { TodoCard } from '@/components/todo/todo-card';
 import { TodoDrawer } from '@/components/todo/todo-drawer';
 import { Button } from '@/components/ui/button';
-import { getTodayDate } from '@/lib/utils';
+import { formatFullDateTimeIndo, getTodayDate } from '@/lib/utils';
 import { auth } from '@/server/auth';
 import { getHabitsForToday } from '@/server/queries/get-today-habits';
 import { getTodosWithTodayStatus } from '@/server/queries/get-today-todos';
@@ -15,6 +15,7 @@ export default async function Home() {
   if (!user) redirect('/auth/login');
 
   const today = getTodayDate();
+  const formattedDate = formatFullDateTimeIndo(new Date());
   const habits: HabitWithEntry[] = await getHabitsForToday(user.user.id, today);
   const todos: TodoWithEntry[] = await getTodosWithTodayStatus(
     user.user.id,
@@ -53,7 +54,7 @@ export default async function Home() {
   });
   return (
     <div>
-      <Button variant="elevated">{today}</Button>
+      <Button variant="elevated">{formattedDate}</Button>
 
       <h1 className="text-2xl font-bold py-4">Habits</h1>
       {habits.map((habit) => (

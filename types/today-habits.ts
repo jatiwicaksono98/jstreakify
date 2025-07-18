@@ -5,4 +5,5 @@ export interface HabitWithEntry {
   longestStreak: number;
   isDoneToday: boolean | null;
   completedAt: Date | null;
+  description: string;
 }

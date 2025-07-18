@@ -6,6 +6,7 @@ import {
   integer,
   boolean,
   pgEnum,
+  unique,
 } from 'drizzle-orm/pg-core';
 import type { AdapterAccount } from 'next-auth/adapters';
 import { createId } from '@paralleldrive/cuid2';
@@ -114,7 +115,7 @@ export const habits = pgTable('habit', {
     .references(() => users.id, { onDelete: 'cascade' }),
 
   name: text('name').notNull(),
-
+  description: text('description').notNull(),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
 
   // Streak fields
@@ -123,22 +124,28 @@ export const habits = pgTable('habit', {
   lastCompletedDate: date('last_completed_date'),
 });
 
-export const habitEntries = pgTable('habit_entry', {
-  id: text('id')
-    .notNull()
-    .primaryKey()
-    .$defaultFn(() => createId()),
+export const habitEntries = pgTable(
+  'habit_entry',
+  {
+    id: text('id')
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => createId()),
 
-  habitId: text('habit_id')
-    .notNull()
-    .references(() => habits.id, { onDelete: 'cascade' }),
+    habitId: text('habit_id')
+      .notNull()
+      .references(() => habits.id, { onDelete: 'cascade' }),
 
-  date: date('date').notNull(), // for daily tracking and streaks
+    date: date('date').notNull(), // for daily tracking and streaks
 
-  completedAt: timestamp('completed_at', { mode: 'date' }).notNull(), // exact time
+    completedAt: timestamp('completed_at', { mode: 'date' }).notNull(), // exact time
 
-  isDone: boolean('is_done').notNull().default(false),
-});
+    isDone: boolean('is_done').notNull().default(false),
+  },
+  (table) => ({
+    uniqueHabitDay: unique().on(table.habitId, table.date),
+  })
+);
 
 export const todos = pgTable('todo', {
   id: text('id')

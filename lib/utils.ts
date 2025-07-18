@@ -28,7 +28,7 @@ export function getOffsetDateAndTime(): Date {
  * Format a date into 'HH:mm:ss' in Jakarta local time
  */
 export function formatTimeJakarta(date: Date): string {
-  return formatInTimeZone(date, 'Asia/Jakarta', 'HH:mm:ss');
+  return formatInTimeZone(date, 'Asia/Jakarta', 'HH:mm');
 }
 
 export function getAgeFromNow(date: Date): string {
@@ -60,5 +60,5 @@ export function formatFullDateTimeIndo(date: Date): string {
   const hour = parts.find((p) => p.type === 'hour')?.value;
   const minute = parts.find((p) => p.type === 'minute')?.value;
 
-  return `${day} ${month} ${year} at ${hour}.${minute} WIB`;
+  return `${day} ${month} ${year} @ ${hour}.${minute} WIB`;
 }
