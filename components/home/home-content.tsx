@@ -28,22 +28,9 @@ export function HomeContent({
   initialDate,
   initialHabits,
 }: HomeContentProps) {
-  console.log('TESTING');
-  console.log(initialHabits);
-
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState(initialDate);
-  const [habits, setHabits] = useState<HabitWithEntry[]>(initialHabits);
-
-  useEffect(() => {
-    setHabits(initialHabits);
-    setDate(initialDate);
-  }, [initialHabits, initialDate]);
-  const formattedDateText = format(date, 'EEEE, dd MMMM yyyy', {
-    locale: localeID,
-  });
-
+  const date = initialDate;
   const formattedDateForDB = format(date, 'yyyy-MM-dd');
 
   const handleSelect = (newDate: Date | undefined) => {
@@ -52,8 +39,6 @@ export function HomeContent({
       setOpen(false); // Just close the calendar if the same date
       return;
     }
-    setDate(newDate);
-    setHabits([]); // optional: clears current habits to prevent flicker
 
     const formatted = format(newDate, 'yyyy-MM-dd');
     setOpen(false); // Close popover right away
@@ -73,7 +58,7 @@ export function HomeContent({
               id="date"
               className="w-64 justify-between font-normal"
             >
-              {formattedDateText}
+              {formattedDateForDB}
               <ChevronDownIcon className="ml-2 size-4" />
             </Button>
           </PopoverTrigger>
@@ -92,8 +77,8 @@ export function HomeContent({
       <CreateHabitDrawer />
 
       <div className="space-y-2">
-        {habits.length > 0 ? (
-          habits.map((habit) => (
+        {initialHabits.length > 0 ? (
+          initialHabits.map((habit) => (
             <HabitCard key={habit.id} {...habit} date={formattedDateForDB} />
           ))
         ) : (

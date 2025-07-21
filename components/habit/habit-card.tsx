@@ -9,6 +9,7 @@ import { Check, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAction } from 'next-safe-action/hooks';
+import router from 'next/navigation';
 
 type HabitCardProps = HabitWithEntry & {
   date: string;
@@ -49,6 +50,7 @@ export function HabitCard({
           ? 'Kebiasaan berhasil diselesaikan! 🎉'
           : 'Kebiasaan dibatalkan ❌'
       );
+      router.refresh(); // ✅ force page.tsx to rerun and give latest initialHabits
     },
     onError: () => {
       rollbackState();
