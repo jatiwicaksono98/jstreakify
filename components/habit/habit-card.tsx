@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toggleHabitEntry } from '@/server/actions/toggle-habit';
 import { HabitWithEntry } from '@/types/today-habits';
@@ -10,17 +10,29 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAction } from 'next-safe-action/hooks';
 
+type HabitCardProps = HabitWithEntry & {
+  date: string;
+};
+
 export function HabitCard({
   id,
   name,
   description,
-  isDoneToday,
+  isDone,
   completedAt,
-  currentStreak: initialStreak,
-}: HabitWithEntry) {
-  const [isDone, setIsDone] = useState(isDoneToday);
+  currentStreak: initialStreak = 0,
+  date,
+}: HabitCardProps) {
+  const [isHabitDone, setIsHabitDone] = useState(isDone ?? false);
   const [doneTime, setDoneTime] = useState<Date | null>(completedAt ?? null);
-  const [currentStreak, setCurrentStreak] = useState(initialStreak ?? 0);
+  const [currentStreak, setCurrentStreak] = useState(initialStreak);
+
+  // ✅ Sync when props change (important after date changes)
+  useEffect(() => {
+    setIsHabitDone(isDone ?? false);
+    setDoneTime(completedAt ?? null);
+    setCurrentStreak(initialStreak);
+  }, [isDone, completedAt, initialStreak]);
 
   const { execute, status } = useAction(toggleHabitEntry, {
     onSuccess: (result) => {
@@ -30,9 +42,13 @@ export function HabitCard({
         return;
       }
 
-      setDoneTime(result.completedAt ?? new Date());
-      setCurrentStreak(result.currentStreak ?? currentStreak);
-      toast.success('Kebiasaan berhasil diselesaikan! 🎉');
+      setIsHabitDone(result.isDone);
+      setDoneTime(result.completedAt ?? null);
+      toast.success(
+        result.isDone
+          ? 'Kebiasaan berhasil diselesaikan! 🎉'
+          : 'Kebiasaan dibatalkan ❌'
+      );
     },
     onError: () => {
       rollbackState();
@@ -40,45 +56,43 @@ export function HabitCard({
     },
   });
 
-  // ⬅️ rollback helper
   const rollbackState = () => {
-    setIsDone(isDoneToday);
+    setIsHabitDone(isDone ?? false);
     setDoneTime(completedAt ?? null);
-    setCurrentStreak(initialStreak ?? 0);
+    setCurrentStreak(initialStreak);
   };
 
   const handleClick = () => {
-    if (status === 'executing' || isDone) return;
+    if (status === 'executing') return;
 
     const optimisticTime = new Date();
+    const optimisticDone = !isHabitDone;
 
-    // ✅ Optimistic UI update
-    setIsDone(true);
-    setDoneTime(optimisticTime);
-    setCurrentStreak((prev) => prev + 1);
+    setIsHabitDone(optimisticDone);
+    setDoneTime(optimisticDone ? optimisticTime : null);
+    setCurrentStreak((prev) => (optimisticDone ? prev + 1 : prev - 1));
 
-    execute({ habitId: id });
+    execute({ habitId: id, date });
   };
 
   return (
     <Card
-      onClick={!isDone ? handleClick : undefined}
+      onClick={handleClick}
       className={cn(
         'mb-4 transition-all duration-200 select-none border-black',
         'active:scale-[0.98]',
-        isDone ? 'cursor-default' : 'cursor-pointer',
-        isDone ? 'bg-emerald-100' : 'bg-rose-100 hover:bg-rose-200',
-        isDone &&
+        isHabitDone ? 'cursor-default' : 'cursor-pointer',
+        isHabitDone ? 'bg-emerald-100' : 'bg-rose-100 hover:bg-rose-200',
+        isHabitDone &&
           'shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-x-[4px] -translate-y-[4px] hover:bg-emerald-200',
         status === 'executing' && 'opacity-50 pointer-events-none cursor-wait'
       )}
     >
       <CardContent className="p-4 flex justify-between items-center gap-4">
-        {/* Left: Habit Info */}
         <div className="flex flex-col">
           <div className="flex items-center gap-2 mb-1">
             <p className="font-semibold text-base">{name}</p>
-            {isDone && doneTime ? (
+            {isHabitDone && doneTime ? (
               <div className="flex items-center gap-1 text-emerald-700">
                 <Check className="w-4 h-4 stroke-[3]" />
                 <span className="text-sm font-medium">

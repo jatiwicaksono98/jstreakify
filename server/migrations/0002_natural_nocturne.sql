@@ -1,1 +1,0 @@
-ALTER TABLE "habit" ADD COLUMN "description" text NOT NULL;

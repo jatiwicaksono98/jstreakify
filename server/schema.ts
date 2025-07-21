@@ -104,46 +104,38 @@ export const twoFactorTokens = pgTable(
   })
 );
 
-export const habits = pgTable('habit', {
+export const habits = pgTable('habits', {
   id: text('id')
     .notNull()
     .primaryKey()
     .$defaultFn(() => createId()),
-
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-
   name: text('name').notNull(),
-  description: text('description').notNull(),
+  description: text('description'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
-
-  // Streak fields
-  currentStreak: integer('current_streak').notNull().default(0),
-  longestStreak: integer('longest_streak').notNull().default(0),
-  lastCompletedDate: date('last_completed_date'),
+  isArchived: boolean('is_archived').default(false).notNull(),
 });
 
 export const habitEntries = pgTable(
-  'habit_entry',
+  'habit_entries',
   {
     id: text('id')
       .notNull()
       .primaryKey()
       .$defaultFn(() => createId()),
-
     habitId: text('habit_id')
       .notNull()
       .references(() => habits.id, { onDelete: 'cascade' }),
+    date: date('date').notNull(),
+    completedAt: timestamp('completed_at', { mode: 'date' }).notNull(),
+    isDone: boolean('is_done').default(false).notNull(),
 
-    date: date('date').notNull(), // for daily tracking and streaks
-
-    completedAt: timestamp('completed_at', { mode: 'date' }).notNull(), // exact time
-
-    isDone: boolean('is_done').notNull().default(false),
+    // unique constraint to avoid duplicates per habit/day
   },
   (table) => ({
-    uniqueHabitDay: unique().on(table.habitId, table.date),
+    uniqueHabitDate: unique().on(table.habitId, table.date),
   })
 );
 

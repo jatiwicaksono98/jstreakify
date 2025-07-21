@@ -1,9 +1,10 @@
-export interface HabitWithEntry {
+export type HabitWithEntry = {
   id: string;
   name: string;
-  currentStreak: number;
-  longestStreak: number;
-  isDoneToday: boolean | null;
-  completedAt: Date | null;
-  description: string;
-}
+  description: string | null;
+  createdAt: Date | null;
+  isArchived: boolean;
+  isDone?: boolean;
+  completedAt?: Date | null;
+  currentStreak?: number;
+};

@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import { subDays, parseISO } from 'date-fns';
 
 /**
  * Merge Tailwind CSS classes safely
@@ -61,4 +62,28 @@ export function formatFullDateTimeIndo(date: Date): string {
   const minute = parts.find((p) => p.type === 'minute')?.value;
 
   return `${day} ${month} ${year} @ ${hour}.${minute} WIB`;
+}
+
+// `entries` must be sorted DESC by date (newest first)
+export function calculateStreak(
+  entries: { date: string; isDone: boolean }[],
+  today: string
+): number {
+  let streak = 0;
+  let current = today;
+
+  for (const entry of entries) {
+    if (!entry.isDone) break;
+    if (entry.date !== current) break;
+
+    streak++;
+    current = formatDate(subDays(parseISO(current), 1));
+  }
+
+  return streak;
+}
+
+// ensure consistent YYYY-MM-DD formatting
+function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
 }

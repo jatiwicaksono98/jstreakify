@@ -1,84 +1,86 @@
-// server/actions/toggle-habit.ts
 'use server';
 
 import { createSafeActionClient } from 'next-safe-action';
 import { eq, and } from 'drizzle-orm';
 import { db } from '..';
 import { auth } from '../auth';
-import { getTodayDate } from '@/lib/utils';
-import { formatInTimeZone } from 'date-fns-tz';
 import { ToggleHabitSchema } from '@/types/toggle-habit-schema';
 import { habitEntries, habits } from '../schema';
+import { parseISO } from 'date-fns';
+import { createId } from '@paralleldrive/cuid2';
 
 const action = createSafeActionClient();
 
 export const toggleHabitEntry = action(
   ToggleHabitSchema,
-  async ({ habitId }) => {
+  async ({ habitId, date }) => {
     const user = await auth();
-    if (!user) {
-      return { error: 'Unauthorized' };
-    }
+    if (!user) return { error: 'Unauthorized' };
 
-    const now = new Date(); // UTC
-    const today = getTodayDate(); // 'YYYY-MM-DD' Jakarta-local
+    const parsedDate = parseISO(date);
+    const now = new Date();
 
+    // ✅ Check if the habit exists and belongs to the user
     const habit = await db.query.habits.findFirst({
       where: eq(habits.id, habitId),
     });
 
-    if (!habit) {
-      return { error: 'Habit not found' };
+    if (!habit || habit.userId !== user.user.id) {
+      return { error: 'Habit not found or not yours' };
     }
 
+    // ✅ Check for existing entry on that date
     const existingEntry = await db.query.habitEntries.findFirst({
       where: and(
         eq(habitEntries.habitId, habitId),
-        eq(habitEntries.date, today)
+        eq(habitEntries.date, date)
       ),
     });
 
-    // Idempotent: already completed today
-    if (existingEntry?.isDone) {
-      return {
-        isDone: true,
-        completedAt: existingEntry.completedAt,
-        currentStreak: habit.currentStreak,
-      };
+    // ✅ If entry exists
+    if (existingEntry) {
+      const isCurrentlyDone = existingEntry.isDone;
+
+      if (isCurrentlyDone) {
+        // Toggle OFF
+        await db
+          .update(habitEntries)
+          .set({ isDone: false, completedAt: null })
+          .where(eq(habitEntries.id, existingEntry.id));
+
+        return {
+          isDone: false,
+          completedAt: null,
+          currentStreak: 0, // 🔧 placeholder for recalculation
+        };
+      } else {
+        // Toggle ON again
+        await db
+          .update(habitEntries)
+          .set({ isDone: true, completedAt: now })
+          .where(eq(habitEntries.id, existingEntry.id));
+
+        return {
+          isDone: true,
+          completedAt: now,
+          currentStreak: 1, // 🔧 placeholder
+        };
+      }
     }
 
-    // Insert today's entry
+    // ✅ Insert new entry as done
     await db.insert(habitEntries).values({
+      id: createId(),
       habitId,
-      date: today,
+      date,
       completedAt: now,
       isDone: true,
     });
-
-    // Calculate streak
-    const yesterdayStr = formatInTimeZone(
-      new Date(Date.now() - 86_400_000),
-      'Asia/Jakarta',
-      'yyyy-MM-dd'
-    );
-
-    const isContinuing = habit.lastCompletedDate === yesterdayStr;
-    const newStreak = isContinuing ? habit.currentStreak + 1 : 1;
-    const newLongest = Math.max(habit.longestStreak, newStreak);
-
-    await db
-      .update(habits)
-      .set({
-        currentStreak: newStreak,
-        longestStreak: newLongest,
-        lastCompletedDate: today,
-      })
-      .where(eq(habits.id, habitId));
 
     return {
       isDone: true,
       completedAt: now,
-      currentStreak: newStreak,
+      currentStreak: 1, // 🔧 placeholder
     };
   }
 );

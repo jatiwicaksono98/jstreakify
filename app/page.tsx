@@ -1,73 +1,36 @@
-import { HabitCard } from '@/components/habit/habit-card';
-import { TodoCard } from '@/components/todo/todo-card';
-import { TodoDrawer } from '@/components/todo/todo-drawer';
-import { Button } from '@/components/ui/button';
-import { formatFullDateTimeIndo, getTodayDate } from '@/lib/utils';
+// app/page.tsx
+import { HomeContent } from '@/components/home/home-content';
 import { auth } from '@/server/auth';
-import { getHabitsForToday } from '@/server/queries/get-today-habits';
-import { getTodosWithTodayStatus } from '@/server/queries/get-today-todos';
-import { HabitWithEntry } from '@/types/today-habits';
-import { TodoWithEntry } from '@/types/today-todo-schema';
 import { redirect } from 'next/navigation';
+import { getHabitsForDate } from '@/server/queries/get-today-habits';
+import { format, parseISO, isValid } from 'date-fns';
+import console from 'console';
 
-export default async function Home() {
-  const user = await auth();
-  if (!user) redirect('/auth/login');
-
-  const today = getTodayDate();
-  const formattedDate = formatFullDateTimeIndo(new Date());
-  const habits: HabitWithEntry[] = await getHabitsForToday(user.user.id, today);
-  const todos: TodoWithEntry[] = await getTodosWithTodayStatus(
-    user.user.id,
-    today
-  );
-
-  // Define sort order
-  const statusOrder = {
-    not_started: 0,
-    in_progress: 1,
-    done: 2,
+type Props = {
+  searchParams: {
+    date?: string;
   };
+};
 
-  // Default to 'not_started' if status is null
-  const sortedTodos = [...todos].sort((a, b) => {
-    const statusOrder = {
-      not_started: 0,
-      in_progress: 1,
-      done: 2,
-    };
+export default async function Home({ searchParams }: Props) {
+  const session = await auth();
+  if (!session?.user) redirect('/auth/login');
 
-    const aOrder = statusOrder[a.status ?? 'not_started'];
-    const bOrder = statusOrder[b.status ?? 'not_started'];
+  const today = new Date();
+  const parsedDate = searchParams.date ? parseISO(searchParams.date) : today;
 
-    if (aOrder !== bOrder) return aOrder - bOrder;
+  const isDateValid = isValid(parsedDate);
+  const targetDate = isDateValid ? parsedDate : today;
 
-    // If both are 'done', sort by completedAt DESC
-    if (a.status === 'done' && b.status === 'done') {
-      const aTime = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-      const bTime = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-      return bTime - aTime;
-    }
+  const formattedDateForDB = format(targetDate, 'yyyy-MM-dd');
 
-    // Keep default for same status
-    return 0;
-  });
+  const habits = await getHabitsForDate(session.user.id, formattedDateForDB);
+
   return (
-    <div>
-      <Button variant="elevated">{formattedDate}</Button>
-
-      <h1 className="text-2xl font-bold py-4">Habits</h1>
-      {habits.map((habit) => (
-        <HabitCard key={habit.id} {...habit} />
-      ))}
-
-      <h1 className="text-2xl font-bold py-4">To Do</h1>
-      <TodoDrawer />
-      <div className="py-4">
-        {sortedTodos.map((todo) => (
-          <TodoCard key={todo.id} {...todo} />
-        ))}
-      </div>
-    </div>
+    <HomeContent
+      userId={session.user.id}
+      initialDate={targetDate}
+      initialHabits={habits}
+    />
   );
 }

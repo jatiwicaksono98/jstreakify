@@ -1,5 +1,5 @@
 {
-  "id": "9314a9ee-d85d-47f0-8436-a0b88b39500d",
+  "id": "95b4264e-7071-4675-8ca3-4d82c630fb2b",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "6",
   "dialect": "postgresql",
@@ -144,8 +144,8 @@
       },
       "uniqueConstraints": {}
     },
-    "public.habit_entry": {
-      "name": "habit_entry",
+    "public.habit_entries": {
+      "name": "habit_entries",
       "schema": "",
       "columns": {
         "id": {
@@ -182,10 +182,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "habit_entry_habit_id_habit_id_fk": {
-          "name": "habit_entry_habit_id_habit_id_fk",
-          "tableFrom": "habit_entry",
-          "tableTo": "habit",
+        "habit_entries_habit_id_habits_id_fk": {
+          "name": "habit_entries_habit_id_habits_id_fk",
+          "tableFrom": "habit_entries",
+          "tableTo": "habits",
           "columnsFrom": [
             "habit_id"
           ],
@@ -197,10 +197,19 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "habit_entries_habit_id_date_unique": {
+          "name": "habit_entries_habit_id_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "habit_id",
+            "date"
+          ]
+        }
+      }
     },
-    "public.habit": {
-      "name": "habit",
+    "public.habits": {
+      "name": "habits",
       "schema": "",
       "columns": {
         "id": {
@@ -221,6 +230,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -228,32 +243,19 @@
           "notNull": false,
           "default": "now()"
         },
-        "current_streak": {
-          "name": "current_streak",
-          "type": "integer",
+        "is_archived": {
+          "name": "is_archived",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
-        },
-        "longest_streak": {
-          "name": "longest_streak",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "last_completed_date": {
-          "name": "last_completed_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
+          "default": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "habit_user_id_user_id_fk": {
-          "name": "habit_user_id_user_id_fk",
-          "tableFrom": "habit",
+        "habits_user_id_user_id_fk": {
+          "name": "habits_user_id_user_id_fk",
+          "tableFrom": "habits",
           "tableTo": "user",
           "columnsFrom": [
             "user_id"
@@ -338,12 +340,13 @@
           "primaryKey": false,
           "notNull": false
         },
-        "is_done": {
-          "name": "is_done",
-          "type": "boolean",
+        "status": {
+          "name": "status",
+          "type": "todo_status",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
-          "default": false
+          "default": "'not_started'"
         }
       },
       "indexes": {},
@@ -558,6 +561,15 @@
       "values": [
         "user",
         "admin"
+      ]
+    },
+    "public.todo_status": {
+      "name": "todo_status",
+      "schema": "public",
+      "values": [
+        "not_started",
+        "in_progress",
+        "done"
       ]
     }
   },
