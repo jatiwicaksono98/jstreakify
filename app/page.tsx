@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { getHabitsForDate } from '@/server/queries/get-today-habits';
 import { format, parseISO, isValid } from 'date-fns';
 import console from 'console';
+import { getTodayJakartaDate } from '@/lib/utils';
 
 type Props = {
   searchParams: {
@@ -20,7 +21,7 @@ export default async function Home({ searchParams }: Props) {
   const parsedDate = searchParams.date ? parseISO(searchParams.date) : today;
 
   const isDateValid = isValid(parsedDate);
-  const targetDate = isDateValid ? parsedDate : today;
+  const targetDate = isDateValid ? parsedDate : getTodayJakartaDate();
 
   const formattedDateForDB = format(targetDate, 'yyyy-MM-dd');
 

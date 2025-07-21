@@ -87,3 +87,12 @@ export function calculateStreak(
 function formatDate(date: Date): string {
   return date.toISOString().split('T')[0];
 }
+
+export function getTodayJakartaDate(): Date {
+  const jakartaDateStr = formatInTimeZone(
+    new Date(),
+    'Asia/Jakarta',
+    'yyyy-MM-dd'
+  );
+  return new Date(`${jakartaDateStr}T00:00:00`);
+}
