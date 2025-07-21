@@ -6,12 +6,15 @@ import { getHabitsForDate } from '@/server/queries/get-today-habits';
 import { format, parseISO, isValid } from 'date-fns';
 import console from 'console';
 import { getTodayJakartaDate } from '@/lib/utils';
+import { formatInTimeZone } from 'date-fns-tz';
 
 type Props = {
   searchParams: {
     date?: string;
   };
 };
+
+export const dynamic = 'force-dynamic';
 
 export default async function Home({ searchParams }: Props) {
   const session = await auth();
@@ -21,9 +24,13 @@ export default async function Home({ searchParams }: Props) {
   const parsedDate = searchParams.date ? parseISO(searchParams.date) : today;
 
   const isDateValid = isValid(parsedDate);
-  const targetDate = isDateValid ? parsedDate : getTodayJakartaDate();
+  const targetDate = isDateValid ? parsedDate : today;
 
-  const formattedDateForDB = format(targetDate, 'yyyy-MM-dd');
+  const formattedDateForDB = formatInTimeZone(
+    targetDate,
+    'Asia/Jakarta',
+    'yyyy-MM-dd'
+  );
 
   const habits = await getHabitsForDate(session.user.id, formattedDateForDB);
 
