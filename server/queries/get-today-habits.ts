@@ -30,7 +30,5 @@ export async function getHabitsForDate(
     currentStreak: 0, // Placeholder, calculate if needed
   }));
 
-  revalidatePath('/');
-
   return formattedResults;
 }

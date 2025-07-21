@@ -59,6 +59,7 @@ export function HomeContent({
     setOpen(false); // Close popover right away
 
     router.push(`/?date=${formatted}`);
+    router.refresh();
     // router.refresh(); // Force re-render with fresh server data
   };
 
