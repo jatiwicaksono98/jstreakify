@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toggleHabitEntry } from '@/server/actions/toggle-habit';
 import { HabitWithEntry } from '@/types/today-habits';
@@ -9,7 +8,7 @@ import { Check, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAction } from 'next-safe-action/hooks';
-import router from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 type HabitCardProps = HabitWithEntry & {
   date: string;
@@ -21,61 +20,38 @@ export function HabitCard({
   description,
   isDone,
   completedAt,
-  currentStreak: initialStreak = 0,
+  currentStreak,
   date,
 }: HabitCardProps) {
-  const [isHabitDone, setIsHabitDone] = useState(isDone ?? false);
-  const [doneTime, setDoneTime] = useState<Date | null>(completedAt ?? null);
-  const [currentStreak, setCurrentStreak] = useState(initialStreak);
-
-  // ✅ Sync when props change (important after date changes)
-  useEffect(() => {
-    setIsHabitDone(isDone ?? false);
-    setDoneTime(completedAt ?? null);
-    setCurrentStreak(initialStreak);
-  }, [isDone, completedAt, initialStreak]);
+  const router = useRouter();
 
   const { execute, status } = useAction(toggleHabitEntry, {
     onSuccess: (result) => {
       if (!result || 'error' in result) {
         toast.error(result?.error || 'Terjadi kesalahan 😢');
-        rollbackState();
         return;
       }
 
-      setIsHabitDone(result.isDone);
-      setDoneTime(result.completedAt ?? null);
       toast.success(
         result.isDone
           ? 'Kebiasaan berhasil diselesaikan! 🎉'
           : 'Kebiasaan dibatalkan ❌'
       );
-      router.refresh(); // ✅ force page.tsx to rerun and give latest initialHabits
+
+      router.refresh(); // Fetch updated server state
     },
     onError: () => {
-      rollbackState();
       toast.error('Gagal menyimpan kebiasaan. Coba lagi ya 🙏');
     },
   });
 
-  const rollbackState = () => {
-    setIsHabitDone(isDone ?? false);
-    setDoneTime(completedAt ?? null);
-    setCurrentStreak(initialStreak);
-  };
-
   const handleClick = () => {
     if (status === 'executing') return;
-
-    const optimisticTime = new Date();
-    const optimisticDone = !isHabitDone;
-
-    setIsHabitDone(optimisticDone);
-    setDoneTime(optimisticDone ? optimisticTime : null);
-    setCurrentStreak((prev) => (optimisticDone ? prev + 1 : prev - 1));
-
     execute({ habitId: id, date });
   };
+
+  const isHabitDone = isDone ?? false;
+  const doneTime = completedAt ?? null;
 
   return (
     <Card
