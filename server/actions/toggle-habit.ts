@@ -1,13 +1,16 @@
 'use server';
 
-import { createSafeActionClient } from 'next-safe-action';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, desc, lt } from 'drizzle-orm';
+import { parseISO, isSameDay } from 'date-fns';
+import { revalidatePath } from 'next/cache';
+import { createId } from '@paralleldrive/cuid2';
+import { formatInTimeZone } from 'date-fns-tz';
+
 import { db } from '..';
 import { auth } from '../auth';
-import { ToggleHabitSchema } from '@/types/toggle-habit-schema';
 import { habitEntries, habits } from '../schema';
-import { parseISO } from 'date-fns';
-import { createId } from '@paralleldrive/cuid2';
+import { ToggleHabitSchema } from '@/types/toggle-habit-schema';
+import { createSafeActionClient } from 'next-safe-action';
 
 const action = createSafeActionClient();
 
@@ -17,10 +20,13 @@ export const toggleHabitEntry = action(
     const user = await auth();
     if (!user) return { error: 'Unauthorized' };
 
-    const parsedDate = parseISO(date);
     const now = new Date();
+    const today = new Date();
+    const parsedDate = parseISO(date);
 
-    // ✅ Check if the habit exists and belongs to the user
+    const todayStr = formatInTimeZone(today, 'Asia/Jakarta', 'yyyy-MM-dd');
+
+    // 1. Validate ownership
     const habit = await db.query.habits.findFirst({
       where: eq(habits.id, habitId),
     });
@@ -29,7 +35,7 @@ export const toggleHabitEntry = action(
       return { error: 'Habit not found or not yours' };
     }
 
-    // ✅ Check for existing entry on that date
+    // 2. Check for existing entry
     const existingEntry = await db.query.habitEntries.findFirst({
       where: and(
         eq(habitEntries.habitId, habitId),
@@ -37,50 +43,79 @@ export const toggleHabitEntry = action(
       ),
     });
 
-    // ✅ If entry exists
+    let isDone: boolean;
+    let completedAt: Date | undefined;
+
     if (existingEntry) {
-      const isCurrentlyDone = existingEntry.isDone;
+      isDone = !existingEntry.isDone;
+      completedAt = isDone ? now : undefined;
 
-      if (isCurrentlyDone) {
-        // Toggle OFF
-        await db
-          .update(habitEntries)
-          .set({ isDone: false, completedAt: null })
-          .where(eq(habitEntries.id, existingEntry.id));
+      await db
+        .update(habitEntries)
+        .set({ isDone, completedAt })
+        .where(eq(habitEntries.id, existingEntry.id));
+    } else {
+      isDone = true;
+      completedAt = now;
 
-        return {
-          isDone: false,
-          completedAt: null,
-          currentStreak: 0, // 🔧 placeholder for recalculation
-        };
-      } else {
-        // Toggle ON again
-        await db
-          .update(habitEntries)
-          .set({ isDone: true, completedAt: now })
-          .where(eq(habitEntries.id, existingEntry.id));
-
-        return {
-          isDone: true,
-          completedAt: now,
-          currentStreak: 1, // 🔧 placeholder
-        };
-      }
+      await db.insert(habitEntries).values({
+        id: createId(),
+        habitId,
+        date,
+        isDone,
+        completedAt,
+      });
     }
 
-    // ✅ Insert new entry as done
-    await db.insert(habitEntries).values({
-      id: createId(),
-      habitId,
-      date,
-      completedAt: now,
-      isDone: true,
-    });
+    let currentStreak = habit.currentStreak ?? 0;
+
+    // 3. Recalculate streak only if toggled for today
+    if (isSameDay(parsedDate, today)) {
+      currentStreak = await calculateCurrentStreakUntilToday(habitId, todayStr);
+      await db
+        .update(habits)
+        .set({ currentStreak })
+        .where(eq(habits.id, habitId));
+    }
+
+    revalidatePath('/');
 
     return {
-      isDone: true,
-      completedAt: now,
-      currentStreak: 1, // 🔧 placeholder
+      isDone,
+      completedAt,
+      currentStreak,
     };
   }
 );
+
+async function calculateCurrentStreakUntilToday(
+  habitId: string,
+  todayStr: string
+): Promise<number> {
+  // Fetch entries before today, ordered descending
+  const entries = await db.query.habitEntries.findMany({
+    where: and(
+      eq(habitEntries.habitId, habitId),
+      lt(habitEntries.date, todayStr)
+    ),
+    orderBy: [desc(habitEntries.date)],
+  });
+
+  let streak = 0;
+  for (const entry of entries) {
+    if (!entry.isDone) break;
+    streak++;
+  }
+
+  // Include today if done
+  const todayEntry = await db.query.habitEntries.findFirst({
+    where: and(
+      eq(habitEntries.habitId, habitId),
+      eq(habitEntries.date, todayStr)
+    ),
+  });
+
+  if (todayEntry?.isDone) streak++;
+
+  return streak;
+}

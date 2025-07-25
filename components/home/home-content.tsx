@@ -43,15 +43,17 @@ export function HomeContent({ initialDate, initialHabits }: HomeContentProps) {
   const date = initialDate;
   const formattedDateForDB = format(date, 'yyyy-MM-dd');
 
-  const { execute: deleteHabitAction, deleteStatus } = useAction(deleteHabit, {
-    onSuccess: () => {
-      toast.success('Habit berhasil dihapus');
-      router.refresh(); // to re-fetch habits
-    },
-    onError: () => {
-      toast.error('Gagal menghapus habit');
-    },
-  });
+  const { execute: deleteHabitAction, status: deleteStatus } = useAction(
+    deleteHabit,
+    {
+      onSuccess: () => {
+        toast.success('Habit berhasil dihapus');
+      },
+      onError: () => {
+        toast.error('Gagal menghapus habit');
+      },
+    }
+  );
 
   const handleSelect = (newDate: Date | undefined) => {
     if (!newDate || !isValid(newDate)) return;
@@ -64,8 +66,6 @@ export function HomeContent({ initialDate, initialHabits }: HomeContentProps) {
     setOpen(false); // Close popover right away
 
     router.push(`/?date=${formatted}`);
-    router.refresh();
-    // router.refresh(); // Force re-render with fresh server data
   };
 
   return (
@@ -131,9 +131,10 @@ export function HomeContent({ initialDate, initialHabits }: HomeContentProps) {
                       <AlertDialogCancel>Batal</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => deleteHabitAction({ habitId: habit.id })}
-                        disabled={status === 'executing'}
                       >
-                        {status === 'executing' ? 'Menghapus...' : 'Hapus'}
+                        {deleteStatus === 'executing'
+                          ? 'Menghapus...'
+                          : 'Hapus'}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

@@ -116,6 +116,9 @@ export const habits = pgTable('habits', {
   description: text('description'),
   createdAt: timestamp('created_at', { mode: 'date' }).defaultNow(),
   isArchived: boolean('is_archived').default(false).notNull(),
+
+  // ✅ Add this:
+  currentStreak: integer('current_streak').default(0).notNull(),
 });
 
 export const habitEntries = pgTable(
@@ -129,7 +132,7 @@ export const habitEntries = pgTable(
       .notNull()
       .references(() => habits.id, { onDelete: 'cascade' }),
     date: date('date').notNull(),
-    completedAt: timestamp('completed_at', { mode: 'date' }).notNull(),
+    completedAt: timestamp('completed_at', { mode: 'date' }),
     isDone: boolean('is_done').default(false).notNull(),
 
     // unique constraint to avoid duplicates per habit/day

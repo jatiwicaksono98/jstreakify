@@ -1,0 +1,1 @@
+ALTER TABLE "habits" ADD COLUMN "current_streak" integer DEFAULT 0 NOT NULL;

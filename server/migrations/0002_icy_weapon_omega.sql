@@ -1,0 +1,1 @@
+ALTER TABLE "habit_entries" ALTER COLUMN "completed_at" DROP NOT NULL;

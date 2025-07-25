@@ -8,7 +8,6 @@ import { Check, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useAction } from 'next-safe-action/hooks';
-import { useRouter } from 'next/navigation';
 
 type HabitCardProps = HabitWithEntry & {
   date: string;
@@ -23,8 +22,6 @@ export function HabitCard({
   currentStreak,
   date,
 }: HabitCardProps) {
-  const router = useRouter();
-
   const { execute, status } = useAction(toggleHabitEntry, {
     onSuccess: (result) => {
       if (!result || 'error' in result) {
@@ -37,8 +34,6 @@ export function HabitCard({
           ? 'Kebiasaan berhasil diselesaikan! 🎉'
           : 'Kebiasaan dibatalkan ❌'
       );
-
-      router.refresh(); // Fetch updated server state
     },
     onError: () => {
       toast.error('Gagal menyimpan kebiasaan. Coba lagi ya 🙏');
