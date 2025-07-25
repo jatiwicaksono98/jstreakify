@@ -93,9 +93,11 @@ export function HabitCard({
           )}
         </div>
 
-        {/* Right: Streak */}
-        <div className="text-right whitespace-nowrap text-sm font-medium">
-          🔥 Streak: <span className="text-amber-600">{currentStreak}</span>
+        {/* Right: Streak + Edit Button */}
+        <div className="text-sm font-medium flex items-center">
+          <span>
+            🔥 Streak: <span className="text-amber-600">{currentStreak}</span>
+          </span>
         </div>
       </CardContent>
     </Card>

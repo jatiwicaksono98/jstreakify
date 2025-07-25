@@ -1,9 +1,8 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { format, isValid, isSameDay } from 'date-fns';
-import { id as localeID } from 'date-fns/locale';
 import { ChevronDownIcon } from 'lucide-react';
 
 import { CreateHabitDrawer } from '@/components/habit/create-habit-drawer';
@@ -16,6 +15,21 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover';
+import { EditHabitDrawer } from '../habit/edit-habit-drawer';
+import { deleteHabit } from '@/server/actions/delete-habit';
+import { useAction } from 'next-safe-action/hooks';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '../ui/alert-dialog';
 
 type HomeContentProps = {
   userId: string;
@@ -23,15 +37,21 @@ type HomeContentProps = {
   initialHabits: HabitWithEntry[];
 };
 
-export function HomeContent({
-  userId,
-  initialDate,
-  initialHabits,
-}: HomeContentProps) {
+export function HomeContent({ initialDate, initialHabits }: HomeContentProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const date = initialDate;
   const formattedDateForDB = format(date, 'yyyy-MM-dd');
+
+  const { execute: deleteHabitAction, deleteStatus } = useAction(deleteHabit, {
+    onSuccess: () => {
+      toast.success('Habit berhasil dihapus');
+      router.refresh(); // to re-fetch habits
+    },
+    onError: () => {
+      toast.error('Gagal menghapus habit');
+    },
+  });
 
   const handleSelect = (newDate: Date | undefined) => {
     if (!newDate || !isValid(newDate)) return;
@@ -79,7 +99,47 @@ export function HomeContent({
       <div className="space-y-2">
         {initialHabits.length > 0 ? (
           initialHabits.map((habit) => (
-            <HabitCard key={habit.id} {...habit} date={formattedDateForDB} />
+            <div
+              key={habit.id}
+              className="flex justify-between items-start gap-2 sm:gap-4"
+            >
+              <div className="flex-1">
+                <HabitCard {...habit} date={formattedDateForDB} />
+              </div>
+              <div className="pt-2 pr-2 flex flex-col gap-1">
+                <EditHabitDrawer
+                  habitId={habit.id}
+                  initialName={habit.name}
+                  initialDescription={habit.description ?? ''}
+                />
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="text-xs">
+                      Hapus
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Hapus Habit?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Ini akan menghapus habit <strong>{habit.name}</strong>{' '}
+                        secara permanen.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Batal</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteHabitAction({ habitId: habit.id })}
+                        disabled={status === 'executing'}
+                      >
+                        {status === 'executing' ? 'Menghapus...' : 'Hapus'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           ))
         ) : (
           <p className="text-muted-foreground text-sm">

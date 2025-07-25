@@ -3,9 +3,7 @@ import { HomeContent } from '@/components/home/home-content';
 import { auth } from '@/server/auth';
 import { redirect } from 'next/navigation';
 import { getHabitsForDate } from '@/server/queries/get-today-habits';
-import { format, parseISO, isValid } from 'date-fns';
-import console from 'console';
-import { getTodayJakartaDate } from '@/lib/utils';
+import { parseISO, isValid } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 
 type Props = {

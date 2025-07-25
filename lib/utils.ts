@@ -29,7 +29,7 @@ export function getOffsetDateAndTime(): Date {
  * Format a date into 'HH:mm:ss' in Jakarta local time
  */
 export function formatTimeJakarta(date: Date): string {
-  return formatInTimeZone(date, 'Asia/Jakarta', 'HH:mm');
+  return formatInTimeZone(date, 'Asia/Jakarta', 'dd/MM/yyyy @ HH:mm');
 }
 
 export function getAgeFromNow(date: Date): string {
